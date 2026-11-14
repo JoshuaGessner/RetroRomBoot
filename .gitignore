@@ -39,5 +39,5 @@ RomBoot.code-workspace
 *.sha256
 *.manifest.json
 *.licenses/
-data/
-cache/
+/data/
+/cache/

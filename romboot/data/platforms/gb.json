@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "gb",
+  "name": "Nintendo Game Boy / Game Boy Color",
+  "aliases": ["gameboy", "gbc"],
+  "extensions": [".gb", ".gbc"],
+  "emulator": "retroarch",
+  "core": "gambatte",
+  "target_support": ["rpi4", "rpizero2w"],
+  "bios": [],
+  "status": "mvp-structural",
+  "settings": {
+    "emulator_path": "/usr/bin/retroarch",
+    "core_path": "/usr/lib/libretro/gambatte_libretro.so",
+    "retroarch_config": "/etc/retroarch.cfg",
+    "aspect_ratio": "10:9",
+    "integer_scaling": true,
+    "region": "auto"
+  },
+  "notes": "BIOS-free (gambatte uses HLE). Physical Raspberry Pi verification is still required."
+}
