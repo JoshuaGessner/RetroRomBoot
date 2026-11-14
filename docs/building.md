@@ -4,7 +4,7 @@ RomBoot separates untrusted game input from the Linux cross-build. It never down
 
 ## Native Linux build
 
-Install Python 3.9+, GNU Make, the standard Buildroot host prerequisites, and `zstd` when producing a compressed artifact. Obtain Buildroot 2025.02.16 from the URL in `dependencies.lock.json`, verify its detached OpenPGP signature with a trusted Buildroot release key, and extract it outside this repository.
+Install Python 3.11+, GNU Make, the standard Buildroot host prerequisites, and `zstd` when producing a compressed artifact. Obtain Buildroot 2025.02.16 from the URL in `dependencies.lock.json`, verify its detached OpenPGP signature with a trusted Buildroot release key, and extract it outside this repository.
 
 ```sh
 python3 -m pip install -e .

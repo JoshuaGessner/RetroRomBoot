@@ -1,7 +1,7 @@
 # RetroRomBoot
 
 [![CI](https://github.com/JoshuaGessner/RetroRomBoot/actions/workflows/ci.yml/badge.svg)](https://github.com/JoshuaGessner/RetroRomBoot/actions/workflows/ci.yml)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Buildroot 2025.02.16](https://img.shields.io/badge/Buildroot-2025.02.16-91B93E)](https://buildroot.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -48,7 +48,7 @@ Flashing is deliberately outside the web service. Download the completed image, 
 
 ## Command-line use
 
-The host CLI requires Python 3.9 or newer and has no runtime Python dependencies:
+The host CLI requires Python 3.11 or newer and has no runtime Python dependencies:
 
 ```sh
 python3 -m pip install -e .
@@ -126,7 +126,7 @@ make check
 python3 -m build
 ```
 
-CI runs the host test suite on Python 3.9 and 3.12, builds and smoke-tests the wheel, runs security-focused tests, and validates the pinned Buildroot configuration. Structural tests and QEMU cannot establish real Raspberry Pi firmware, HDMI, GPU, audio, USB, SD-card, or power-loss behavior.
+CI runs the host test suite on Python 3.11 and 3.13, builds and smoke-tests the wheel, runs security-focused tests, and validates the pinned Buildroot configuration. Structural tests and QEMU cannot establish real Raspberry Pi firmware, HDMI, GPU, audio, USB, SD-card, or power-loss behavior.
 
 Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), keep all downloaded sources pinned, and never commit game or BIOS content.
 

@@ -9,7 +9,7 @@ RomBoot must generate a small, reproducible Raspberry Pi image that directly run
 
 ## Decision
 
-Use a pinned Buildroot release plus a RomBoot external tree for Raspberry Pi target configuration, runtime overlay, package definitions, hashes, and image layout. The host-facing `romboot` command is zero-dependency Python 3.9+; it orchestrates validation, staging, Buildroot, image assembly, manifests, and verification. It is not part of the target operating system.
+Use a pinned Buildroot release plus a RomBoot external tree for Raspberry Pi target configuration, runtime overlay, package definitions, hashes, and image layout. The host-facing `romboot` command is zero-dependency Python 3.11+; it orchestrates validation, staging, Buildroot, image assembly, manifests, and verification. It is not part of the target operating system.
 
 The production design uses a small FAT boot partition, a read-only root filesystem (prefer SquashFS where the emulator stack permits it), `tmpfs` for transient state, and an optional small writable data partition for persistent saves. Release images omit package management, compilers, development headers, desktop stacks, SSH, and unnecessary network services.
 

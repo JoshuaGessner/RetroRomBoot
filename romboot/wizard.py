@@ -1,7 +1,7 @@
 """Interactive, guided terminal UI for RomBoot.
 
 Standard-library only (no third-party dependencies) so it runs on any stock
-Python 3.9+. It is a thin, guided front-end over the same functions the
+Python 3.11+. It is a thin, guided front-end over the same functions the
 ``romboot`` subcommands use: nothing here bypasses the security, staging or
 flash safeguards -- it only makes them easier to reach in one place.
 

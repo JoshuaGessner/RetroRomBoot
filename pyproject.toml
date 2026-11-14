@@ -7,7 +7,7 @@ name = "romboot"
 version = "0.1.0"
 description = "Build minimal, single-game Raspberry Pi images from user-supplied ROMs"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [{name = "RomBoot contributors"}]
 keywords = ["raspberry-pi", "retro-gaming", "buildroot", "retroarch", "embedded-linux"]

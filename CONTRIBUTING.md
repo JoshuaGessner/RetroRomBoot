@@ -4,7 +4,7 @@ Thanks for helping improve RetroRomBoot. Contributions should preserve its core 
 
 ## Development setup
 
-RomBoot's host tools require Python 3.9 or newer and have no runtime Python dependencies.
+RomBoot's host tools require Python 3.11 or newer and have no runtime Python dependencies.
 
 ```sh
 python3 -m pip install -e .
