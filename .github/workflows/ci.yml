@@ -12,7 +12,8 @@ jobs:
     strategy:
       matrix:
         python: ["3.9", "3.12"]
-    runs-on: ubuntu-latest
+    # Python 3.9 is unavailable on the current ubuntu-latest (26.04) runner.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
@@ -31,7 +32,7 @@ jobs:
           romboot platforms
 
   registry-security:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
@@ -41,7 +42,7 @@ jobs:
         run: python -m unittest -v tests.test_core.SecurityTests tests.test_core.BiosTests tests.test_core.ConfigTests tests.test_core.FlashSafetyTests
 
   buildroot-config:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Validate pinned Buildroot configuration
