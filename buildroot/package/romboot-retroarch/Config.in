@@ -1,0 +1,15 @@
+config BR2_PACKAGE_ROMBOOT_RETROARCH
+	bool "RetroArch (RomBoot pinned build)"
+	depends on BR2_USE_MMU
+	depends on BR2_TOOLCHAIN_HAS_THREADS
+	depends on BR2_PACKAGE_HAS_LIBEGL
+	depends on BR2_PACKAGE_HAS_LIBGLES
+	select BR2_PACKAGE_ALSA_LIB
+	select BR2_PACKAGE_LIBDRM
+	select BR2_PACKAGE_ZLIB
+	help
+	  Minimal RetroArch frontend configured for direct DRM/KMS, EGL/GLES,
+	  ALSA, and udev input. Network, desktop-window-system, and updater
+	  features are disabled for the RomBoot appliance.
+
+	  https://www.retroarch.com/

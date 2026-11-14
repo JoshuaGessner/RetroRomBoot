@@ -1,0 +1,77 @@
+# Raspberry Pi 4 Model B, 64-bit, one-game appliance.
+BR2_aarch64=y
+BR2_cortex_a72=y
+BR2_TOOLCHAIN_BUILDROOT_CXX=y
+BR2_TOOLCHAIN_BUILDROOT_MUSL=y
+BR2_REPRODUCIBLE=y
+# Toolchain kernel headers must match the pinned 6.6.x Raspberry Pi kernel
+# (headers must be <= the target kernel; "same as kernel" cannot resolve a
+# custom tarball version). Mirrors Buildroot's raspberrypi4_64_defconfig.
+BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_6_6=y
+
+# Quiet appliance userspace with dynamic input devices and no login prompt.
+BR2_TARGET_GENERIC_HOSTNAME="romboot"
+BR2_TARGET_GENERIC_ISSUE="RomBoot appliance"
+# BR2_TARGET_GENERIC_GETTY is not set
+# BR2_TARGET_GENERIC_REMOUNT_ROOTFS_RW is not set
+BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_EUDEV=y
+BR2_SYSTEM_DHCP=""
+BR2_ROOTFS_OVERLAY="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/common/rootfs-overlay"
+BR2_ROOTFS_POST_BUILD_SCRIPT="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/common/post-build.sh"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/rpi4/post-image.sh"
+
+# Linux and Raspberry Pi firmware.
+BR2_LINUX_KERNEL=y
+# --- RomBoot: pinned Raspberry Pi kernel fork (see dependencies.lock.json) ---
+# Mainline lacks bcm2711_defconfig and its generic arm64 config cannot mount the
+# XZ squashfs root; this rpi-6.12.y fork ships bcm2711_defconfig with SQUASHFS_XZ
+# and vc4-kms-v3d tuned for Pi 4. Commit matches Buildroot 2025.02.16's own
+# raspberrypi4_64_defconfig.
+BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
+BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="$(call github,raspberrypi,linux,576cc10e1ed50a9eacffc7a05c796051d7343ea4)/linux-576cc10e1ed50a9eacffc7a05c796051d7343ea4.tar.gz"
+BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL=y
+BR2_LINUX_KERNEL_DEFCONFIG="bcm2711"
+BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/common/linux.fragment"
+BR2_LINUX_KERNEL_DTS_SUPPORT=y
+BR2_LINUX_KERNEL_INTREE_DTS_NAME="broadcom/bcm2711-rpi-4-b"
+BR2_PACKAGE_RPI_FIRMWARE=y
+BR2_PACKAGE_RPI_FIRMWARE_VARIANT_PI4_CD=y
+# BR2_PACKAGE_RPI_FIRMWARE_INSTALL_DTB_OVERLAYS is not set
+BR2_PACKAGE_RPI_FIRMWARE_CONFIG_FILE="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/rpi4/config.txt"
+BR2_PACKAGE_RPI_FIRMWARE_CMDLINE_FILE="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/rpi4/cmdline.txt"
+
+# Direct HDMI, audio, and USB input stack.
+BR2_PACKAGE_EUDEV=y
+BR2_PACKAGE_LIBDRM=y
+BR2_PACKAGE_MESA3D=y
+BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_V3D=y
+BR2_PACKAGE_MESA3D_OPENGL_EGL=y
+BR2_PACKAGE_MESA3D_OPENGL_ES=y
+
+# Original, non-branded early boot splash.
+BR2_PACKAGE_PSPLASH=y
+BR2_PACKAGE_PSPLASH_IMAGE="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/common/splash.png"
+# BR2_PACKAGE_PSPLASH_PROGRESS_BAR is not set
+# BR2_PACKAGE_PSPLASH_STARTUP_MSG is not set
+
+# Pinned one-game NES runtime supplied by this external tree.
+BR2_PACKAGE_ROMBOOT_RUNTIME=y
+BR2_PACKAGE_ROMBOOT_RETROARCH=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_FCEUMM=y
+BR2_PACKAGE_ROMBOOT_JOYPAD_AUTOCONFIG=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_SNES9X2010=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_GENESIS_PLUS_GX=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_GAMBATTE=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_MGBA=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_BEETLE_PCE_FAST=y
+
+# Immutable root plus generated SD-card layout.
+BR2_TARGET_ROOTFS_SQUASHFS=y
+BR2_TARGET_ROOTFS_SQUASHFS4_XZ=y
+BR2_TARGET_ROOTFS_SQUASHFS_EXTREME_COMP=y
+BR2_PACKAGE_HOST_GENIMAGE=y
+BR2_PACKAGE_HOST_E2FSPROGS=y
+# genimage builds the FAT boot partition with mkdosfs (dosfstools) and copies
+# files into it with mcopy (mtools); both host tools are required.
+BR2_PACKAGE_HOST_DOSFSTOOLS=y
+BR2_PACKAGE_HOST_MTOOLS=y

@@ -1,0 +1,24 @@
+#!/bin/sh
+set -eu
+
+marker=/run/romboot/psplash-started
+
+case "${1:-}" in
+	start)
+		mkdir -p /run/romboot
+		if [ -x /usr/bin/psplash ]; then
+			/usr/bin/psplash -n >/dev/null 2>&1 &
+			touch "$marker"
+		fi
+		;;
+	stop)
+		if [ -x /usr/bin/psplash-write ]; then
+			/usr/bin/psplash-write QUIT >/dev/null 2>&1 || true
+		fi
+		rm -f "$marker"
+		;;
+	*)
+		echo "Usage: $0 {start|stop}" >&2
+		exit 1
+		;;
+esac

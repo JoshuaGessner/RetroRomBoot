@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RomBoot — build a one-game console image</title>
+<style>
+  :root {
+    --bg: #f3f5f1; --surface: #fff; --surface-2: #eceee8; --line: #d7dbd2;
+    --ink: #1b2124; --ink-soft: #4a5257; --muted: #79837f;
+    --accent: #9c560f; --accent-bright: #b26312; --teal: #206b66;
+    --good: #2c7a4c; --warn: #9a6f0c; --crit: #b23b2e;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121618; --surface: #1a1f22; --surface-2: #232a2d; --line: #2c3438;
+      --ink: #e8ebe5; --ink-soft: #b6bfbd; --muted: #808b8a;
+      --accent: #e8973f; --accent-bright: #f2a95a; --teal: #4fb3ab;
+      --good: #5fbd83; --warn: #d9a83a; --crit: #e0665a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+  a { color: var(--accent); }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 20px 80px; }
+  header { border-bottom: 1px solid var(--line); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, var(--surface)), var(--surface)); }
+  header .wrap { padding-top: 28px; padding-bottom: 22px; }
+  .brand { font-size: 26px; font-weight: 680; letter-spacing: -0.02em; margin: 0; }
+  .brand b { color: var(--accent); font-weight: 680; }
+  .tag { color: var(--ink-soft); margin: 4px 0 0; font-size: 15px; }
+  .health { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .pill { font-family: var(--mono); font-size: 11.5px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--line); background: var(--surface); white-space: nowrap; }
+  .pill .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; background: var(--muted); }
+  .pill.ok .dot { background: var(--good); }
+  .pill.bad .dot { background: var(--crit); }
+  .pill.warn .dot { background: var(--warn); }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-family: var(--mono); margin: 34px 0 12px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--ink-soft); margin: 14px 0 5px; font-weight: 560; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; }
+  .row > div { flex: 1 1 200px; }
+  select, input[type=file] { width: 100%; font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--ink); }
+  input[type=file] { padding: 8px; }
+  button { font: inherit; font-weight: 600; font-size: 14px; padding: 10px 18px; border-radius: 9px; border: 1px solid transparent; background: var(--accent); color: #fff; cursor: pointer; }
+  button.secondary { background: transparent; color: var(--accent); border-color: var(--accent); }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btnrow { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+  .detect { font-size: 14px; }
+  .detect .k { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+  .detect code { font-family: var(--mono); font-size: 13px; }
+  .muted { color: var(--muted); }
+  .hidden { display: none !important; }
+  .status { font-family: var(--mono); font-size: 12px; padding: 2px 9px; border-radius: 6px; border: 1px solid var(--line); }
+  .status.running { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+  .status.succeeded { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+  .status.failed, .status.cancelled { color: var(--crit); border-color: color-mix(in srgb, var(--crit) 45%, transparent); }
+  .status.queued { color: var(--muted); }
+  #log { font-family: var(--mono); font-size: 12px; line-height: 1.5; background: #0c0f11; color: #cfe3d8; border-radius: 10px; padding: 14px; height: 340px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+  .notice { border-radius: 10px; padding: 12px 14px; font-size: 14px; margin-top: 12px; border: 1px solid; }
+  .notice.warn { background: color-mix(in srgb, var(--warn) 12%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  .notice.good { background: color-mix(in srgb, var(--good) 12%, var(--surface)); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+  .notice.crit { background: color-mix(in srgb, var(--crit) 12%, var(--surface)); border-color: color-mix(in srgb, var(--crit) 40%, transparent); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .buildrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .buildrow:last-child { border-bottom: none; }
+  .sha { font-family: var(--mono); font-size: 11px; color: var(--muted); word-break: break-all; }
+  details summary { cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  code.cmd { display: block; font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-top: 8px; overflow-x: auto; white-space: pre; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1 class="brand">Rom<b>Boot</b></h1>
+    <p class="tag">Upload one legally obtained ROM, build a bootable Raspberry&nbsp;Pi image, download it, and flash it yourself.</p>
+    <div class="health" id="health"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="tokenGate" class="notice warn hidden">
+    This service requires an access token.
+    <div class="btnrow">
+      <input id="tokenInput" type="password" placeholder="access token" style="flex:1 1 200px;min-width:180px">
+      <button onclick="saveToken()">Save</button>
+    </div>
+  </div>
+
+  <h2>New build</h2>
+  <div class="card">
+    <label for="rom">1 · ROM file <span class="muted">(your own legally obtained game)</span></label>
+    <input id="rom" type="file">
+    <div id="detect" class="detect hidden" style="margin-top:14px"></div>
+    <div id="biosNotice"></div>
+
+    <div id="options" class="hidden">
+      <div class="row">
+        <div>
+          <label for="target">2 · Target board</label>
+          <select id="target"></select>
+        </div>
+        <div>
+          <label for="save">3 · Save behaviour</label>
+          <select id="save">
+            <option value="persistent">persistent — battery saves kept on a data partition</option>
+            <option value="ephemeral">ephemeral — saves kept only until power-off</option>
+            <option value="disabled">disabled — no saves</option>
+          </select>
+        </div>
+      </div>
+      <label for="splash">Custom boot splash <span class="muted">(optional PNG)</span></label>
+      <input id="splash" type="file" accept="image/png">
+    </div>
+
+    <div class="btnrow">
+      <button id="buildBtn" disabled onclick="startBuild()">Build image</button>
+      <span id="buildHint" class="muted" style="font-size:13px"></span>
+    </div>
+  </div>
+
+  <div id="activePanel" class="hidden">
+    <h2>Build <span id="activeStatus" class="status"></span></h2>
+    <div class="card">
+      <div id="log"></div>
+      <div class="btnrow">
+        <button class="secondary" id="cancelBtn" onclick="cancelBuild()">Cancel build</button>
+        <span id="activeMeta" class="muted" style="font-size:13px"></span>
+      </div>
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <h2>Recent builds</h2>
+  <div class="card" id="builds"><p class="muted" style="margin:0">No builds yet.</p></div>
+
+  <h2>Supported consoles</h2>
+  <div class="card"><table id="platforms"><tbody></tbody></table></div>
+</div>
+
+<script>
+const token = () => localStorage.getItem("romboot_token") || "";
+function headers(extra) {
+  const h = Object.assign({}, extra || {});
+  if (token()) h["X-RomBoot-Token"] = token();
+  return h;
+}
+async function api(path, opts) {
+  opts = opts || {};
+  opts.headers = headers(opts.headers);
+  const res = await fetch(path, opts);
+  if (res.status === 401) { document.getElementById("tokenGate").classList.remove("hidden"); throw new Error("unauthorized"); }
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+  return data;
+}
+function saveToken() {
+  localStorage.setItem("romboot_token", document.getElementById("tokenInput").value.trim());
+  location.reload();
+}
+function fmtSize(n) {
+  if (n == null) return "?";
+  const u = ["B","KiB","MiB","GiB"]; let i = 0;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return n.toFixed(i ? 1 : 0) + " " + u[i];
+}
+
+let state = { uploadId: null, romName: null, detected: null, splashId: null, activeJob: null, es: null };
+
+// Build logs can be tens of thousands of lines; render a capped tail on an
+// animation frame instead of touching the DOM per line, or the tab locks up.
+const LOG_CAP = 600;
+let logBuf = [];
+let logDirty = false;
+let logAtBottom = true;
+function resetLog() { logBuf = []; logDirty = true; }
+function pushLog(line) {
+  logBuf.push(line);
+  if (logBuf.length > LOG_CAP) logBuf.splice(0, logBuf.length - LOG_CAP);
+  logDirty = true;
+}
+function renderLog() {
+  if (logDirty) {
+    const log = document.getElementById("log");
+    if (log) {
+      log.textContent = logBuf.join("\n");
+      if (logAtBottom) log.scrollTop = log.scrollHeight;
+    }
+    logDirty = false;
+  }
+  requestAnimationFrame(renderLog);
+}
+requestAnimationFrame(renderLog);
+
+async function loadHealth() {
+  try {
+    const d = await api("/api/doctor");
+    const el = document.getElementById("health");
+    el.innerHTML = "";
+    d.checks.forEach(c => {
+      const cls = c.ok ? "ok" : (["make","Buildroot source"].includes(c.name) ? "bad" : "warn");
+      const p = document.createElement("span");
+      p.className = "pill " + cls;
+      p.innerHTML = '<span class="dot"></span>' + c.name + " · " + c.detail;
+      el.appendChild(p);
+    });
+    document.getElementById("buildHint").textContent = d.ready_to_build ? "" :
+      "This container has no Buildroot source configured — set BUILDROOT_DIR to build.";
+  } catch (e) {}
+}
+async function loadPlatforms() {
+  try {
+    const d = await api("/api/platforms");
+    const tb = document.querySelector("#platforms tbody");
+    tb.innerHTML = "<tr><th>Console</th><th>ID</th><th>Extensions</th><th>Boards</th><th>BIOS</th></tr>";
+    d.platforms.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${p.name}</td><td><code>${p.id}</code></td>
+        <td class="muted">${p.extensions.join(" ")}</td>
+        <td class="muted">${p.targets.join(", ") || "—"}</td>
+        <td>${p.bios_required.length ? p.bios_required.join(", ") : '<span class="muted">none</span>'}</td>`;
+      tb.appendChild(tr);
+    });
+  } catch (e) {}
+}
+
+document.getElementById("rom").addEventListener("change", async (ev) => {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const detect = document.getElementById("detect");
+  detect.classList.remove("hidden");
+  detect.innerHTML = '<span class="muted">Uploading and inspecting…</span>';
+  document.getElementById("buildBtn").disabled = true;
+  try {
+    const up = await putUpload(file);
+    state.uploadId = up.upload_id; state.romName = up.name;
+    const info = await api("/api/inspect", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ upload_id: up.upload_id })
+    });
+    state.detected = info;
+    renderDetected(info, up);
+  } catch (e) {
+    detect.innerHTML = '<span class="notice crit">Could not inspect: ' + e.message + '</span>';
+  }
+});
+
+async function putUpload(file) {
+  const res = await fetch("/api/uploads", {
+    method: "PUT",
+    headers: headers({ "X-Filename": file.name, "Content-Type": "application/octet-stream" }),
+    body: file
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "upload failed");
+  return data;
+}
+
+function renderDetected(info, up) {
+  document.getElementById("detect").innerHTML =
+    `<div><span class="k">console</span> <b>${info.name}</b> &nbsp; <span class="k">core</span> <code>${info.core}</code></div>
+     <div style="margin-top:4px"><span class="k">file</span> ${info.rom_name} · ${fmtSize(info.size)} · <span class="k">sha256</span> <code>${info.sha256.slice(0,16)}…</code></div>`;
+  const biosDiv = document.getElementById("biosNotice");
+  biosDiv.innerHTML = info.required_bios.length
+    ? `<div class="notice warn">This console needs BIOS files: <b>${info.required_bios.join(", ")}</b>. Upload them below.</div>
+       <label>Required BIOS files</label><input id="bios" type="file" multiple>`
+    : "";
+  const tsel = document.getElementById("target");
+  tsel.innerHTML = "";
+  info.targets.forEach(t => { const o = document.createElement("option"); o.value = t; o.textContent = t; tsel.appendChild(o); });
+  document.getElementById("options").classList.remove("hidden");
+  document.getElementById("buildBtn").disabled = info.targets.length === 0;
+  if (!info.targets.length)
+    document.getElementById("buildHint").textContent = "No buildable target board for this console yet.";
+}
+
+async function startBuild() {
+  const btn = document.getElementById("buildBtn");
+  btn.disabled = true;
+  try {
+    const biosInput = document.getElementById("bios");
+    const biosIds = [];
+    if (biosInput) for (const f of biosInput.files) biosIds.push((await putUpload(f)).upload_id);
+    const splashInput = document.getElementById("splash");
+    let splashId = null;
+    if (splashInput && splashInput.files[0]) splashId = (await putUpload(splashInput.files[0])).upload_id;
+    const job = await api("/api/builds", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        upload_id: state.uploadId,
+        platform: state.detected.platform,
+        target: document.getElementById("target").value,
+        save_mode: document.getElementById("save").value,
+        splash_upload_id: splashId,
+        bios_upload_ids: biosIds
+      })
+    });
+    watchJob(job.id);
+    loadBuilds();
+  } catch (e) {
+    alert("Could not start build: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function watchJob(id) {
+  state.activeJob = id;
+  const panel = document.getElementById("activePanel");
+  panel.classList.remove("hidden");
+  resetLog();
+  document.getElementById("result").innerHTML = "";
+  setActiveStatus("running");
+  if (state.es) state.es.close();
+  const url = "/api/builds/" + id + "/logs?stream=1" + (token() ? "&token=" + encodeURIComponent(token()) : "");
+  const es = new EventSource(url);
+  state.es = es;
+  es.onmessage = (e) => pushLog(e.data);
+  es.addEventListener("end", async () => {
+    es.close();
+    const job = await api("/api/builds/" + id);
+    finishJob(job);
+  });
+  es.onerror = () => { /* EventSource auto-retries; the 'end' event closes it cleanly */ };
+}
+
+function setActiveStatus(s) {
+  const el = document.getElementById("activeStatus");
+  el.textContent = s; el.className = "status " + s;
+  document.getElementById("cancelBtn").classList.toggle("hidden", s !== "running" && s !== "queued");
+}
+
+function finishJob(job) {
+  setActiveStatus(job.status);
+  loadBuilds();
+  const result = document.getElementById("result");
+  if (job.status === "succeeded" && job.artifact) {
+    const dl = "/api/builds/" + job.id + "/artifact" + (token() ? "?token=" + encodeURIComponent(token()) : "");
+    result.innerHTML = `
+      <div class="notice good" style="margin-top:16px">
+        <b>Image ready — ${job.artifact.name}</b> · ${fmtSize(job.artifact.size)}
+        <div class="sha" style="margin-top:6px">sha256 ${job.artifact.sha256 || ""}</div>
+        <div class="btnrow">
+          <a href="${dl}"><button>Download image</button></a>
+        </div>
+        <details style="margin-top:12px"><summary>How to flash it</summary>
+          <p style="font-size:13.5px">This service does not flash SD cards — write the image on your own machine:</p>
+          <ul style="font-size:13.5px">
+            <li><b>Raspberry Pi Imager</b> → “Use custom image”. If the name ends in <code>.zst</code>, run <code>zstd -d ${job.artifact.name}</code> first.</li>
+            <li><b>Linux/macOS:</b> <code class="cmd">zstd -d ${job.artifact.name}\nsudo dd if=${job.artifact.name.replace(/\.zst$/,'')} of=/dev/YOUR_SD_DEVICE bs=4M conv=fsync</code></li>
+          </ul>
+          <p class="muted" style="font-size:12.5px">Verify the download against the sha256 above before flashing. RomBoot builds one game per card.</p>
+        </details>
+      </div>`;
+  } else if (job.status !== "succeeded") {
+    result.innerHTML = `<div class="notice crit" style="margin-top:16px"><b>Build ${job.status}.</b> ${job.error ? "<pre style='white-space:pre-wrap;font-size:12px;margin:8px 0 0'>" + escapeHtml(job.error) + "</pre>" : ""}</div>`;
+  }
+}
+function escapeHtml(s) { return (s || "").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+async function cancelBuild() {
+  if (!state.activeJob) return;
+  try { await api("/api/builds/" + state.activeJob + "/cancel", { method: "POST" }); } catch (e) {}
+}
+
+async function loadBuilds() {
+  try {
+    const d = await api("/api/builds");
+    const el = document.getElementById("builds");
+    if (!d.builds.length) { el.innerHTML = '<p class="muted" style="margin:0">No builds yet.</p>'; return; }
+    el.innerHTML = "";
+    d.builds.forEach(b => {
+      const row = document.createElement("div");
+      row.className = "buildrow";
+      const when = b.finished_at || b.started_at || b.created_at || "";
+      const right = b.status === "succeeded" && b.artifact
+        ? `<a href="/api/builds/${b.id}/artifact${token() ? "?token=" + encodeURIComponent(token()) : ""}"><button class="secondary">Download</button></a>`
+        : `<span class="status ${b.status}">${b.status}</span>`;
+      row.innerHTML = `<div><b>${b.rom_name || "image"}</b> <span class="muted">→ ${b.target}</span><br>
+        <span class="muted" style="font-size:12px">${when}</span></div><div>${right}</div>`;
+      row.querySelector("div b").style.cursor = "pointer";
+      row.querySelector("div").onclick = () => watchJob(b.id);
+      el.appendChild(row);
+    });
+  } catch (e) {}
+}
+
+if (token()) document.getElementById("tokenInput") && (document.getElementById("tokenInput").value = "");
+(function () {
+  const log = document.getElementById("log");
+  if (log) log.addEventListener("scroll", () => {
+    logAtBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  });
+})();
+loadHealth(); loadPlatforms(); loadBuilds();
+setInterval(loadHealth, 30000);
+// Poll builds so a finished image always surfaces a Download button even if the
+// live stream hiccuped, and finalize the active panel if its 'end' was missed.
+setInterval(async () => {
+  loadBuilds();
+  if (!state.activeJob) return;
+  try {
+    const job = await api("/api/builds/" + state.activeJob);
+    const st = document.getElementById("activeStatus");
+    if (st && st.textContent === "running" &&
+        ["succeeded", "failed", "cancelled"].includes(job.status)) {
+      if (state.es) { state.es.close(); state.es = null; }
+      finishJob(job);
+    }
+  } catch (e) {}
+}, 4000);
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "genesis",
+  "name": "Sega Genesis / Mega Drive",
+  "aliases": ["megadrive", "md"],
+  "extensions": [".md", ".gen", ".smd"],
+  "emulator": "retroarch",
+  "core": "genesis_plus_gx",
+  "target_support": ["rpi4", "rpizero2w"],
+  "bios": [],
+  "status": "mvp-structural",
+  "settings": {
+    "emulator_path": "/usr/bin/retroarch",
+    "core_path": "/usr/lib/libretro/genesis_plus_gx_libretro.so",
+    "retroarch_config": "/etc/retroarch.cfg",
+    "aspect_ratio": "4:3",
+    "integer_scaling": true,
+    "region": "auto"
+  },
+  "notes": "BIOS-free (Sega/Mega CD would need a BIOS and is out of scope). Physical Raspberry Pi verification is still required."
+}

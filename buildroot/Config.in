@@ -1,0 +1,17 @@
+menu "RomBoot options"
+
+config BR2_PACKAGE_ROMBOOT_RUNTIME
+	bool "RomBoot appliance runtime"
+	default y
+	help
+	  Installs the read-only, one-game runtime overlay used by RomBoot targets.
+
+source "$BR2_EXTERNAL_ROMBOOT_PATH/package/romboot-retroarch/Config.in"
+source "$BR2_EXTERNAL_ROMBOOT_PATH/package/romboot-libretro-fceumm/Config.in"
+source "$BR2_EXTERNAL_ROMBOOT_PATH/package/romboot-joypad-autoconfig/Config.in"
+source "$BR2_EXTERNAL_ROMBOOT_PATH/package/romboot-libretro-snes9x2010/Config.in"
+source "$BR2_EXTERNAL_ROMBOOT_PATH/package/romboot-libretro-genesis-plus-gx/Config.in"
+source "$BR2_EXTERNAL_ROMBOOT_PATH/package/romboot-libretro-gambatte/Config.in"
+source "$BR2_EXTERNAL_ROMBOOT_PATH/package/romboot-libretro-mgba/Config.in"
+source "$BR2_EXTERNAL_ROMBOOT_PATH/package/romboot-libretro-beetle-pce-fast/Config.in"
+endmenu

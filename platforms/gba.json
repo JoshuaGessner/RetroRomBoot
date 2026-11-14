@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "gba",
+  "name": "Nintendo Game Boy Advance",
+  "aliases": ["gameboyadvance"],
+  "extensions": [".gba"],
+  "emulator": "retroarch",
+  "core": "mgba",
+  "target_support": ["rpi4", "rpizero2w"],
+  "bios": [],
+  "status": "mvp-structural",
+  "settings": {
+    "emulator_path": "/usr/bin/retroarch",
+    "core_path": "/usr/lib/libretro/mgba_libretro.so",
+    "retroarch_config": "/etc/retroarch.cfg",
+    "aspect_ratio": "3:2",
+    "integer_scaling": true,
+    "region": "auto"
+  },
+  "notes": "BIOS-free (mGBA has an HLE BIOS). Physical Raspberry Pi verification is still required."
+}

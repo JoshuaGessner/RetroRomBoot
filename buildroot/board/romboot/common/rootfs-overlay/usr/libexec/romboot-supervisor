@@ -1,0 +1,118 @@
+#!/bin/sh
+# RomBoot's release-mode appliance supervisor.  It contains no shell escape or
+# interactive fallback: emulator termination maps to a deterministic policy.
+set -eu
+
+CONFIG=/etc/romboot/game.env
+RUNTIME_DIR=/run/romboot
+
+if [ ! -r "$CONFIG" ]; then
+	echo "RomBoot: missing runtime configuration" >&2
+	exec /sbin/poweroff
+fi
+
+# shellcheck disable=SC1090
+. "$CONFIG"
+
+: "${ROMBOOT_EMULATOR:?}"
+: "${ROMBOOT_CORE:?}"
+: "${ROMBOOT_ROM:?}"
+: "${ROMBOOT_RETROARCH_CONFIG:?}"
+: "${ROMBOOT_EXIT_POLICY:=shutdown}"
+: "${ROMBOOT_LOG_BYTES:=65536}"
+: "${ROMBOOT_SAVE_MODE:=persistent}"
+
+mkdir -p "$RUNTIME_DIR"
+log_file=/data/logs/runtime.log
+session_config="$RUNTIME_DIR/session.cfg"
+case "$ROMBOOT_SAVE_MODE" in
+	persistent)
+		save_dir=/data/saves
+		;;
+	ephemeral)
+		save_dir="$RUNTIME_DIR/saves"
+		;;
+	disabled)
+		save_dir=/dev/null
+		;;
+	*)
+		echo "RomBoot: invalid save mode" >&2
+		exec /sbin/poweroff
+		;;
+esac
+if [ "$ROMBOOT_SAVE_MODE" != disabled ]; then
+	mkdir -p "$save_dir"
+fi
+printf 'savefile_directory = "%s"\nsavestate_directory = "%s"\n' "$save_dir" "$save_dir" >"$session_config"
+
+bounded_log() {
+	message="$1"
+	[ -d /data/logs ] || return 0
+	if [ -f "$log_file" ] && [ "$(wc -c <"$log_file")" -ge "$ROMBOOT_LOG_BYTES" ]; then
+		mv -f "$log_file" "$log_file.1"
+	fi
+	printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$message" >>"$log_file"
+}
+
+show_splash() {
+	[ -x /usr/bin/psplash ] || return 0
+	[ ! -e "$RUNTIME_DIR/psplash-started" ] || return 0
+	/usr/bin/psplash -n >/dev/null 2>&1 &
+	touch "$RUNTIME_DIR/psplash-started"
+}
+
+hide_splash() {
+	if [ -x /usr/bin/psplash-write ]; then
+		/usr/bin/psplash-write QUIT >/dev/null 2>&1 || true
+	fi
+	rm -f "$RUNTIME_DIR/psplash-started"
+}
+
+shutdown() {
+	bounded_log "shutting down"
+	sync
+	exec /sbin/poweroff
+}
+
+on_signal() {
+	shutdown
+}
+
+trap on_signal INT TERM
+
+if [ ! -x "$ROMBOOT_EMULATOR" ] || [ ! -r "$ROMBOOT_CORE" ] || [ ! -r "$ROMBOOT_ROM" ]; then
+	bounded_log "required emulator, core, or ROM is unavailable"
+	show_splash
+	sleep 10
+	shutdown
+fi
+
+hide_splash
+bounded_log "launching selected game"
+set +e
+"$ROMBOOT_EMULATOR" --config "$ROMBOOT_RETROARCH_CONFIG" --appendconfig "$session_config" --libretro "$ROMBOOT_CORE" "$ROMBOOT_ROM" >/dev/null 2>&1
+result=$?
+set -e
+
+case "$ROMBOOT_EXIT_POLICY" in
+	shutdown)
+		bounded_log "emulator exited with status $result"
+		shutdown
+		;;
+	restart-once)
+		bounded_log "emulator exited with status $result; restarting once"
+		show_splash
+		"$ROMBOOT_EMULATOR" --config "$ROMBOOT_RETROARCH_CONFIG" --appendconfig "$session_config" --libretro "$ROMBOOT_CORE" "$ROMBOOT_ROM" >/dev/null 2>&1 || true
+		shutdown
+		;;
+	error)
+		bounded_log "emulator exited with status $result; showing error screen"
+		show_splash
+		sleep 15
+		shutdown
+		;;
+	*)
+		bounded_log "invalid exit policy: $ROMBOOT_EXIT_POLICY"
+		shutdown
+		;;
+esac

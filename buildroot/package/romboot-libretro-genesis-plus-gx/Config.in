@@ -1,0 +1,8 @@
+config BR2_PACKAGE_ROMBOOT_LIBRETRO_GENESIS_PLUS_GX
+	bool "Genesis Plus GX libretro core (RomBoot pinned build)"
+	depends on BR2_TOOLCHAIN_HAS_THREADS
+	help
+	  Genesis Plus GX core (libretro): Sega Genesis/Mega Drive, Master
+	  System, Game Gear, SG-1000.
+
+	  https://github.com/libretro/Genesis-Plus-GX

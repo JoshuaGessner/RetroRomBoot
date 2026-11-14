@@ -1,0 +1,44 @@
+# Raspberry Pi Zero 2 W target profile.  This describes only a design target;
+# physical-hardware verification is still required for each release.
+schema_version = 1
+id = "rpizero2w"
+name = "Raspberry Pi Zero 2 W"
+architecture = "aarch64"
+buildroot_defconfig = "romboot_rpizero2w_defconfig"
+boot_image = "sdcard.img"
+compressed_image = "sdcard.img.zst"
+supported = true
+
+[hardware]
+board = "Raspberry Pi Zero 2 W"
+soc = "Broadcom BCM2837 (Cortex-A53)"
+min_memory_mb = 512
+boot_medium = "microSD"
+video = ["mini-HDMI", "KMS/DRM (VideoCore IV / vc4)"]
+audio = ["HDMI"]
+input = ["USB gamepad via micro-USB OTG", "USB keyboard"]
+
+[storage]
+boot_partition = 1
+root_partition = 2
+data_partition = 3
+root_filesystem = "squashfs"
+root_read_only = true
+data_filesystem = "ext4"
+data_label = "ROMBOOT-DATA"
+data_size_mib = 32
+
+[runtime]
+supervisor = "/usr/libexec/romboot-supervisor"
+game_config = "/etc/romboot/game.env"
+rom_mount_path = "/rom"
+save_path = "/data/saves"
+log_path = "/data/logs/runtime.log"
+default_video_driver = "gl"
+default_audio_driver = "alsa"
+default_input_driver = "udev"
+
+[verification]
+physical_hardware_required = true
+qemu_limited = true
+notes = "Unverified on hardware: VideoCore IV (vc4) GLES via KMS, dwc2 USB host mode for input, and bootcode.bin SD boot. QEMU cannot validate Pi firmware, HDMI, KMS/DRM, USB input, or audio."

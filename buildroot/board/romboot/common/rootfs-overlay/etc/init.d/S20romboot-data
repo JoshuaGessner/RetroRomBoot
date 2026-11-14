@@ -1,0 +1,31 @@
+#!/bin/sh
+# Mount the only writable partition before the appliance supervisor starts.
+
+DATA_DEVICE="${ROMBOOT_DATA_DEVICE:-/dev/mmcblk0p3}"
+DATA_DIR=/data
+
+case "$1" in
+	start)
+		mkdir -p "$DATA_DIR"
+		attempt=0
+		while [ "$attempt" -lt 10 ]; do
+			if mountpoint -q "$DATA_DIR" 2>/dev/null; then
+				break
+			fi
+			if mount -t ext4 -o noatime,nosuid,nodev "$DATA_DEVICE" "$DATA_DIR"; then
+				break
+			fi
+			attempt=$((attempt + 1))
+			sleep 1
+		done
+		if ! mountpoint -q "$DATA_DIR" 2>/dev/null; then
+			echo "RomBoot: writable data partition unavailable" >&2
+			exit 1
+		fi
+		mkdir -p "$DATA_DIR/saves" "$DATA_DIR/logs"
+		chmod 0755 "$DATA_DIR" "$DATA_DIR/saves" "$DATA_DIR/logs"
+		;;
+	stop)
+		umount "$DATA_DIR" 2>/dev/null || true
+		;;
+esac

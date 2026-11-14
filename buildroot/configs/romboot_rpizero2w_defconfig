@@ -1,0 +1,75 @@
+# Raspberry Pi Zero 2 W (BCM2837, Cortex-A53), 64-bit, one-game appliance.
+BR2_aarch64=y
+BR2_cortex_a53=y
+BR2_TOOLCHAIN_BUILDROOT_CXX=y
+BR2_TOOLCHAIN_BUILDROOT_MUSL=y
+BR2_REPRODUCIBLE=y
+# Toolchain kernel headers must match the pinned 6.6.x Raspberry Pi kernel
+# (headers must be <= the target kernel; "same as kernel" cannot resolve a
+# custom tarball version).
+BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_6_6=y
+
+# Quiet appliance userspace with dynamic input devices and no login prompt.
+BR2_TARGET_GENERIC_HOSTNAME="romboot"
+BR2_TARGET_GENERIC_ISSUE="RomBoot appliance"
+# BR2_TARGET_GENERIC_GETTY is not set
+# BR2_TARGET_GENERIC_REMOUNT_ROOTFS_RW is not set
+BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_EUDEV=y
+BR2_SYSTEM_DHCP=""
+BR2_ROOTFS_OVERLAY="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/common/rootfs-overlay"
+BR2_ROOTFS_POST_BUILD_SCRIPT="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/common/post-build.sh"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/rpizero2w/post-image.sh"
+
+# Linux and Raspberry Pi firmware.
+# Same pinned raspberrypi/linux fork (rpi-6.6.y) as the Pi 4 target; its unified
+# arm64 bcm2711_defconfig also supports BCM2837 boards like the Zero 2 W - only
+# the in-tree DTB differs. See dependencies.lock.json.
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
+BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="$(call github,raspberrypi,linux,576cc10e1ed50a9eacffc7a05c796051d7343ea4)/linux-576cc10e1ed50a9eacffc7a05c796051d7343ea4.tar.gz"
+BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL=y
+BR2_LINUX_KERNEL_DEFCONFIG="bcm2711"
+BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/common/linux.fragment"
+BR2_LINUX_KERNEL_DTS_SUPPORT=y
+BR2_LINUX_KERNEL_INTREE_DTS_NAME="broadcom/bcm2710-rpi-zero-2-w"
+BR2_PACKAGE_RPI_FIRMWARE=y
+# BCM2837 boots bootcode.bin from the SD FAT partition (unlike the Pi 4 EEPROM).
+BR2_PACKAGE_RPI_FIRMWARE_VARIANT_PI=y
+BR2_PACKAGE_RPI_FIRMWARE_BOOTCODE_BIN=y
+BR2_PACKAGE_RPI_FIRMWARE_INSTALL_DTB_OVERLAYS=y
+BR2_PACKAGE_RPI_FIRMWARE_CONFIG_FILE="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/rpizero2w/config.txt"
+BR2_PACKAGE_RPI_FIRMWARE_CMDLINE_FILE="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/rpizero2w/cmdline.txt"
+
+# Direct HDMI, audio, and USB input stack. VideoCore IV uses the vc4 gallium driver.
+BR2_PACKAGE_EUDEV=y
+BR2_PACKAGE_LIBDRM=y
+BR2_PACKAGE_MESA3D=y
+BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VC4=y
+BR2_PACKAGE_MESA3D_OPENGL_EGL=y
+BR2_PACKAGE_MESA3D_OPENGL_ES=y
+
+# Original, non-branded early boot splash.
+BR2_PACKAGE_PSPLASH=y
+BR2_PACKAGE_PSPLASH_IMAGE="${BR2_EXTERNAL_ROMBOOT_PATH}/board/romboot/common/splash.png"
+# BR2_PACKAGE_PSPLASH_PROGRESS_BAR is not set
+# BR2_PACKAGE_PSPLASH_STARTUP_MSG is not set
+
+# Pinned one-game NES runtime supplied by this external tree.
+BR2_PACKAGE_ROMBOOT_RUNTIME=y
+BR2_PACKAGE_ROMBOOT_RETROARCH=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_FCEUMM=y
+BR2_PACKAGE_ROMBOOT_JOYPAD_AUTOCONFIG=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_SNES9X2010=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_GENESIS_PLUS_GX=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_GAMBATTE=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_MGBA=y
+BR2_PACKAGE_ROMBOOT_LIBRETRO_BEETLE_PCE_FAST=y
+
+# Immutable root plus generated SD-card layout.
+BR2_TARGET_ROOTFS_SQUASHFS=y
+BR2_TARGET_ROOTFS_SQUASHFS4_XZ=y
+BR2_TARGET_ROOTFS_SQUASHFS_EXTREME_COMP=y
+BR2_PACKAGE_HOST_GENIMAGE=y
+BR2_PACKAGE_HOST_E2FSPROGS=y
+BR2_PACKAGE_HOST_DOSFSTOOLS=y
+BR2_PACKAGE_HOST_MTOOLS=y

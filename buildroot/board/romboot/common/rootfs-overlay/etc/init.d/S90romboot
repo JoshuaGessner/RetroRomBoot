@@ -1,0 +1,22 @@
+#!/bin/sh
+# The supervisor is the only release-mode foreground application service.
+
+SUPERVISOR=/usr/libexec/romboot-supervisor
+PIDFILE=/run/romboot/supervisor.pid
+
+case "$1" in
+	start)
+		mkdir -p /run/romboot
+		if [ -r "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+			exit 0
+		fi
+		"$SUPERVISOR" &
+		echo "$!" >"$PIDFILE"
+		;;
+	stop)
+		if [ -r "$PIDFILE" ]; then
+			kill -TERM "$(cat "$PIDFILE")" 2>/dev/null || true
+			rm -f "$PIDFILE"
+		fi
+		;;
+esac

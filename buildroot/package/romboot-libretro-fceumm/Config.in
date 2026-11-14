@@ -1,0 +1,7 @@
+config BR2_PACKAGE_ROMBOOT_LIBRETRO_FCEUMM
+	bool "FCEUmm libretro core (RomBoot pinned build)"
+	depends on BR2_TOOLCHAIN_HAS_THREADS
+	help
+	  FCEUmm NES/Famicom emulator core for the libretro API.
+
+	  https://github.com/libretro/libretro-fceumm

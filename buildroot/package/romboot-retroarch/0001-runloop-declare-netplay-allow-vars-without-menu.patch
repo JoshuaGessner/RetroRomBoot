@@ -1,0 +1,20 @@
+Declare netplay_allow_pause/timeskip in the no-HAVE_MENU branch of runloop.c.
+
+RomBoot builds RetroArch with --disable-menu. In this commit these two vars
+are only declared inside #ifdef HAVE_MENU but used unconditionally at the
+runloop_check_state() call, so the no-menu build fails to compile. Declaring
+them false in the #else branch is correct: networking/netplay is also disabled.
+
+Upstream-status: RomBoot-local (build fix for --disable-menu --disable-networking)
+
+--- a/runloop.c
++++ b/runloop.c
+@@ -6921,6 +6921,8 @@
+             (runloop_st->flags & RUNLOOP_FLAG_PAUSED)
+          || (menu_pause_libretro && (menu_state_get_ptr()->flags & MENU_ST_FLAG_ALIVE));
+ #else
++   bool netplay_allow_timeskip            = false;
++   bool netplay_allow_pause               = false;
+    bool core_paused                       = (runloop_st->flags & RUNLOOP_FLAG_PAUSED) ? true : false;
+ #endif
+    float slowmotion_ratio                 = settings->floats.slowmotion_ratio;

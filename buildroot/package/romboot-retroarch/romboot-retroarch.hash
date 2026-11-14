@@ -1,0 +1,4 @@
+# Locally calculated after Buildroot's git downloader produced the canonical archive.
+sha256  06ff37b39f635bfafa8646ee86ec3abd2350f095ce81f32f0040845bb0b7bb06  romboot-retroarch-baee906ef35b99283f9a1a060a2ce5ac86159b63-git4.tar.gz
+# License file hash.
+sha256  8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903  COPYING

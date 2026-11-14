@@ -1,0 +1,8 @@
+config BR2_PACKAGE_ROMBOOT_JOYPAD_AUTOCONFIG
+	bool "RetroArch joypad autoconfig profiles (udev)"
+	help
+	  Bundles RetroArch's joypad autoconfiguration profiles so USB
+	  controllers are mapped automatically by vendor/product id, without
+	  a per-device binding in retroarch.cfg.
+
+	  https://github.com/libretro/retroarch-joypad-autoconfig

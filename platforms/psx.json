@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "psx",
+  "name": "Sony PlayStation",
+  "aliases": ["ps1", "playstation"],
+  "extensions": [".cue", ".chd", ".pbp"],
+  "emulator": "retroarch",
+  "core": "pcsx_rearmed",
+  "target_support": [],
+  "bios": [
+    {
+      "id": "ntsc-u-bios",
+      "filenames": ["scph5501.bin"],
+      "required": true,
+      "destination": "bios"
+    }
+  ],
+  "status": "registry-proof-only",
+  "settings": {
+    "emulator_path": "/usr/bin/retroarch",
+    "core_path": "/usr/lib/libretro/pcsx_rearmed_libretro.so",
+    "retroarch_config": "/etc/retroarch.cfg",
+    "aspect_ratio": "4:3",
+    "region": "auto"
+  },
+  "notes": "Demonstrates BIOS metadata only. Image builds remain disabled until BIOS hashes, disc-set validation, packaging, and hardware tests are complete."
+}

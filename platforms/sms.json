@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "sms",
+  "name": "Sega Master System",
+  "aliases": ["mastersystem"],
+  "extensions": [".sms"],
+  "emulator": "retroarch",
+  "core": "genesis_plus_gx",
+  "target_support": ["rpi4", "rpizero2w"],
+  "bios": [],
+  "status": "mvp-structural",
+  "settings": {
+    "emulator_path": "/usr/bin/retroarch",
+    "core_path": "/usr/lib/libretro/genesis_plus_gx_libretro.so",
+    "retroarch_config": "/etc/retroarch.cfg",
+    "aspect_ratio": "4:3",
+    "integer_scaling": true,
+    "region": "auto"
+  },
+  "notes": "BIOS-free. Uses the Genesis Plus GX core; physical Raspberry Pi verification is still required."
+}

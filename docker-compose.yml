@@ -1,0 +1,30 @@
+# RomBoot build appliance.
+#
+#   docker compose up --build      # then open http://localhost:8080
+#
+# The port is published to 127.0.0.1 only: this is a self-hosted, single-tenant
+# tool, not a public upload service.  To reach it from another machine, set
+# ROMBOOT_WEB_TOKEN and change the published address deliberately (see below).
+services:
+  romboot:
+    build:
+      context: .
+      dockerfile: containers/romboot-web.Dockerfile
+    image: romboot-web:latest
+    ports:
+      - "127.0.0.1:8080:8080"        # host-side localhost only; the container binds 0.0.0.0
+    volumes:
+      - romboot-data:/data           # uploads, per-build workspaces, logs, artifacts
+      - romboot-cache:/cache         # warm per-target Buildroot tree + shared download cache
+    environment:
+      # Parallelism for each Buildroot build (defaults to the container's CPU count).
+      - ROMBOOT_WEB_JOBS=${ROMBOOT_WEB_JOBS:-}
+      # Uncomment to require a token (mandatory before exposing beyond localhost):
+      # - ROMBOOT_WEB_TOKEN=change-me-to-a-long-random-string
+      # Max single-upload size in bytes (default 4 GiB):
+      # - ROMBOOT_WEB_MAX_UPLOAD=4294967296
+    restart: unless-stopped
+
+volumes:
+  romboot-data:
+  romboot-cache:

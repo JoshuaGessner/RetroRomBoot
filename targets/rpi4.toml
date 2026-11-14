@@ -1,0 +1,43 @@
+# Raspberry Pi 4 Model B target profile.  This describes only a tested design
+# target; physical-hardware verification is still required for each release.
+schema_version = 1
+id = "rpi4"
+name = "Raspberry Pi 4 Model B"
+architecture = "aarch64"
+buildroot_defconfig = "romboot_rpi4_defconfig"
+boot_image = "sdcard.img"
+compressed_image = "sdcard.img.zst"
+supported = true
+
+[hardware]
+board = "Raspberry Pi 4 Model B"
+min_memory_mb = 1024
+boot_medium = "microSD"
+video = ["HDMI", "KMS/DRM"]
+audio = ["HDMI", "USB"]
+input = ["USB gamepad", "USB keyboard"]
+
+[storage]
+boot_partition = 1
+root_partition = 2
+data_partition = 3
+root_filesystem = "squashfs"
+root_read_only = true
+data_filesystem = "ext4"
+data_label = "ROMBOOT-DATA"
+data_size_mib = 32
+
+[runtime]
+supervisor = "/usr/libexec/romboot-supervisor"
+game_config = "/etc/romboot/game.env"
+rom_mount_path = "/rom"
+save_path = "/data/saves"
+log_path = "/data/logs/runtime.log"
+default_video_driver = "gl"
+default_audio_driver = "alsa"
+default_input_driver = "udev"
+
+[verification]
+physical_hardware_required = true
+qemu_limited = true
+notes = "QEMU cannot validate Raspberry Pi firmware, HDMI, KMS/DRM, USB input, or audio."

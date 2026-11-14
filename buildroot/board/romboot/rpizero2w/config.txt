@@ -1,0 +1,16 @@
+# Generic RomBoot firmware configuration for Raspberry Pi Zero 2 W.
+# No console-maker branding or artwork is included.
+disable_splash=1
+boot_delay=0
+disable_overscan=1
+dtoverlay=vc4-kms-v3d
+# The single micro-USB data port is the dwc2 OTG controller; host mode is
+# required to detect a USB gamepad/keyboard (through an OTG adapter/hub).
+dtoverlay=dwc2,dr_mode=host
+max_framebuffers=2
+arm_64bit=1
+# enable_uart=1 exposes a serial console (GPIO 14/15) for boot diagnostics.
+# hdmi_force_hotplug=1 drives HDMI even if EDID isn't read through the adapter.
+enable_uart=0
+hdmi_force_hotplug=1
+kernel=Image

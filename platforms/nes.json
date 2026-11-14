@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "nes",
+  "name": "Nintendo Entertainment System / Famicom",
+  "aliases": ["famicom", "fc"],
+  "extensions": [".nes"],
+  "emulator": "retroarch",
+  "core": "fceumm",
+  "target_support": ["rpi4", "rpizero2w"],
+  "bios": [],
+  "status": "mvp-structural",
+  "settings": {
+    "emulator_path": "/usr/bin/retroarch",
+    "core_path": "/usr/lib/libretro/fceumm_libretro.so",
+    "retroarch_config": "/etc/retroarch.cfg",
+    "aspect_ratio": "4:3",
+    "integer_scaling": true,
+    "region": "auto"
+  },
+  "notes": "Initial image target; physical Raspberry Pi verification is still required."
+}

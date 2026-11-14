@@ -1,0 +1,8 @@
+config BR2_PACKAGE_ROMBOOT_LIBRETRO_BEETLE_PCE_FAST
+	bool "Beetle PCE Fast libretro core (RomBoot pinned build)"
+	depends on BR2_TOOLCHAIN_HAS_THREADS
+	depends on BR2_INSTALL_LIBSTDCPP
+	help
+	  Beetle PCE Fast (Mednafen) PC Engine / TurboGrafx-16 core (libretro).
+
+	  https://github.com/libretro/beetle-pce-fast-libretro

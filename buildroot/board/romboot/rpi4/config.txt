@@ -1,0 +1,12 @@
+# Generic RomBoot firmware configuration for Raspberry Pi 4 Model B.
+# No console-maker branding or artwork is included.
+disable_splash=1
+boot_delay=0
+disable_overscan=1
+dtoverlay=vc4-kms-v3d
+max_framebuffers=2
+arm_64bit=1
+enable_uart=0
+kernel=Image
+start_file=start4cd.elf
+fixup_file=fixup4cd.dat

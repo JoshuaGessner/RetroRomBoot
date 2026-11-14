@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "romboot"
+version = "0.1.0"
+description = "Build minimal, single-game Raspberry Pi images from user-supplied ROMs"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "RomBoot contributors"}]
+keywords = ["raspberry-pi", "retro-gaming", "buildroot", "retroarch", "embedded-linux"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: System :: Operating System Kernels :: Linux",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/JoshuaGessner/RetroRomBoot"
+Documentation = "https://github.com/JoshuaGessner/RetroRomBoot#readme"
+Issues = "https://github.com/JoshuaGessner/RetroRomBoot/issues"
+Source = "https://github.com/JoshuaGessner/RetroRomBoot"
+
+[project.scripts]
+romboot = "romboot.cli:main"
+romboot-web = "romboot_web.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["romboot*", "romboot_web*"]
+
+[tool.setuptools.package-data]
+romboot = ["py.typed", "data/*.json", "data/platforms/*.json"]
+romboot_web = ["static/*"]

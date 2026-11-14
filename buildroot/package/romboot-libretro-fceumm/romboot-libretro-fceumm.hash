@@ -1,0 +1,4 @@
+# Locally calculated after Buildroot's git downloader produced the canonical archive.
+sha256  d0517dbc9b1a458d5df693907ea52587784fd0f2796fe710b9107176701ac94e  romboot-libretro-fceumm-38440e42415e1db959ea030a121f48736d96adc4-git4.tar.gz
+# License file hash.
+sha256  a6996dcf0c334281f734560926e079b2dbbd5b78e81c0ca00a413ec01e1cd2fb  COPYING
